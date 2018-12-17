@@ -17,13 +17,37 @@ io.on('connection', (socket)=>{
 		console.log("client disconnected");
 	});
 	
+	// emit an 'admin' message to inform about a new join to the chat
+	socket.emit('newMessage', {
+		from: "Admin",
+		text: "Welcome to the chat app."
+	});
+	
+	socket.broadcast.emit('newMessage', {
+		from: "Admin",
+		text: "New user joined.",
+		createdAt: new Date().getTime()
+	});
+	
 	socket.on('createMessage', (message)=> {
 		console.log(message);
+		  
+		//this code sends the event for everyone connected
 		io.emit('newMessage', {
 			from: message.from,
 			text: message.text,
 			createdAt: new Date().getTime()
 		})
+		
+		
+		/*
+		//this code sends the event for everyone connected, except the sender
+		socket.broadcast.emit('newMessage', {
+			from: message.from,
+			text: message.text,
+			createdAt: new Date().getTime()
+		});
+		*/
 	});
 	
 	/*
