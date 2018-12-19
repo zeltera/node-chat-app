@@ -24,12 +24,12 @@ io.on('connection', (socket)=>{
 	
 	socket.broadcast.emit('newMessage', generateMessage("Admin", "New user joined."));
 	
-	socket.on('createMessage', (message)=> {
+	socket.on('createMessage', (message, callback)=> {
 		console.log(message);
 		  
 		//this code sends the event for everyone connected
 		io.emit('newMessage', generateMessage(message.from, message.text));
-		
+		callback('This is calback from server');
 		/*
 		//this code sends the event for everyone connected, except the sender
 		socket.broadcast.emit('newMessage', {
