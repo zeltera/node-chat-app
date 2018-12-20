@@ -21,6 +21,14 @@ socket.on('newMessage', (message) => {
 	$('#messages').append(li);
 });
 
+socket.on('newLocationMessage', (message) => {
+	console.log('newMessage', message);
+	let li = $('<li></li>');
+	li.html(`${message.from}: <a href="${message.url}" target="_blank">${message.url}</a>`);
+	$('#messages').append(li);
+});
+
+
 $("#message-form").on("submit", (e)=> {
 	e.preventDefault();
 	socket.emit('createMessage', {
