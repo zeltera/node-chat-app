@@ -1,7 +1,7 @@
 let socket = io();
 socket.on('connect', () => {
 	console.log("connected to server");
-	
+
 	/*
 	socket.emit('createMessage', {
 		"from": "user321",
@@ -17,17 +17,25 @@ socket.on('disconnect', () => {
 socket.on('newMessage', (message) => {
 	//console.log('newMessage', message);
 	const formatedTime = moment(message.createdAt).format("h:mm a");
-	let li = $('<li></li>');
-	li.text(`${message.from} ${formatedTime}: ${message.text}`);
-	$('#messages').append(li);
+	const template= $('#message-template').html();
+	let html = Mustache.render(template, {
+		text: message.text,
+		from: message.from,
+		createdAt: formatedTime
+	});
+	$('#messages').append(html);
 });
 
 socket.on('newLocationMessage', (message) => {
 	//console.log('newMessage', message);
-	let li = $('<li></li>');
+	const template = $("#location-message-template").html();
 	const formatedTime = moment(message.createdAt).format("h:mm a");
-	li.html(`${message.from} ${formatedTime}: <a href="${message.url}" target="_blank">${message.url}</a>`);
-	$('#messages').append(li);
+	let html = Mustache.render(template, {
+		url: message.url,
+		from: message.from,
+		createdAt: formatedTime
+	});
+	$('#messages').append(html);
 });
 
 
@@ -47,9 +55,9 @@ sendLocation.on("click", (e)=>{
 	if(!navigator.geolocation){
 		return alert("Geolocation not supported by your browser");
 	};
-	
+
 	sendLocation.attr('disabled', 'disabled').text('Sending location...');
-	
+
 	navigator.geolocation.getCurrentPosition(function(position){
 		console.log(position);
 		sendLocation.removeAttr('disabled').text('Send location');
