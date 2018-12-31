@@ -4,12 +4,14 @@ const express = require('express');
 const socketIO = require('socket.io');
 const {generateMessage, generateLocationMessage} = require('./utils/message.js');
 const {isRealString} = require('./utils/validations.js');
+const {Users} = require('./utils/users');
 
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
+const users = new Users();
 
 app.use(express.static(publicPath));
 
@@ -17,14 +19,24 @@ io.on('connection', (socket)=>{
 	console.log('new user connected');
 
 	socket.on('disconnect', () => {
+		let user = users.removeUser(socket.id);
+
+		if(user) {
+			io.to(user.room).emit('updateUserList', users.getUserList(user.room));
+			io.to(user.room).emit('newMessage', generateMessage('Admit', `${user.name} has left.`));
+		}
 		console.log("client disconnected");
 	});
 
 	socket.on("join", (params, calback) => {
 		if(!isRealString(params.name) || !isRealString(params.room)){
-			calback("error - invalid name or room name");
+			return calback("error - invalid name or room name");
 		}
 		socket.join(params.room);
+		users.removeUser(socket.id);
+		users.addUser(socket.id, params.name, params.room);
+
+		io.to(params.room).emit('updateUserList', users.getUserList(params.room));
 
 		// io.emit  -> io.to("room name") .emit
 		// socket.broadcast.emit  -> socket.broadcast.to("room name").emit
